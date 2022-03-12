@@ -123,7 +123,8 @@ Write-Host "$fullGameDir\$targetPath" -foreground Green
 Write-Host "`n수정 내용 반영 중..." -ForegroundColor Yellow
 $jsonTarget = Get-Content "$fullGameDir\$targetPath" -raw | ConvertFrom-Json
 $jsonEdit.update.PSObject.Properties | % { 
-    Write-Host "$(($_.name)) = " -nonewline -foreground Green
+    Write-Host "$(($_.name))" -nonewline -foreground Green
+    Write-Host " = " -nonewline -foreground White
     Write-Host "$($jsonTarget.strings.($_.name))" -nonewline -foreground Yellow
     Write-Host " -> " -nonewline -foreground White
     Write-Host "$(($_.value))" -foreground Cyan
