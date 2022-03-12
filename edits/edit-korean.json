@@ -1,8 +1,8 @@
 {
-  "target": "Risk of Rain 2_Data\\StreamingAssets\\Language\\ko\\output-korean.json",
-  "update":
+	"target": "Risk of Rain 2_Data\\StreamingAssets\\Language\\ko\\output-korean.json",
+	"update":
 	{
 		"TREEBOT_BODY_SUBTITLE" : "심비오트",
-    "PLAYER_PICKUP": "<style=cEvent>{0} 님이 획득: {1}{2}</color>"
+		"PLAYER_PICKUP": "<style=cEvent>{0} 님이 획득: {1}{2}</color>"
 	}
 }
