@@ -120,7 +120,7 @@ $targetPath = $jsonEdit.target.Replace("\\", "\")
 Write-Host "`n대상 경로: " -nonewline -ForegroundColor White
 Write-Host "$fullGameDir\$targetPath" -foreground Green
 
-Write-Host "`n수정 내용 반영 중..." -ForegroundColor Yellow
+Write-Host "`n수정 내용 반영 중..." -ForegroundColor White
 $jsonTarget = Get-Content "$fullGameDir\$targetPath" -raw | ConvertFrom-Json
 $jsonEdit.update.PSObject.Properties | % { 
     Write-Host "$(($_.name))" -nonewline -foreground Green
