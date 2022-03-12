@@ -106,29 +106,36 @@ $libFolder = $(FindGameLibraryFolder -GameAppId $AppId)
 
 $installDir = $(Get-Content "$libFolder\steamapps\appmanifest_$AppId.acf" | ConvertFrom-VDF).AppState.Installdir
 $fullGameDir = "$libFolder\steamapps\common\$installDir"
-Write-Host "게임 설치 경로: " -nonewline -ForegroundColor Yellow
+Write-Host "게임 설치 경로: " -nonewline -ForegroundColor White
 Write-Host $fullGameDir -foreground Green
 
-Write-Host "`n수정 내용을 불러오는 중..." -ForegroundColor Yellow
+Write-Host "`n수정 내용을 불러오는 중..." -ForegroundColor White
 
 $jsonEdit = ((New-Object System.Net.WebClient)).DownloadString("https://raw.githubusercontent.com/Hatser/ROR2LocaleEdit/main/edits/edit-korean.json") | ConvertFrom-Json
 
-Write-Host "`n수정 대상 파일을 찾는 중..." -ForegroundColor Yellow
+Write-Host "`n수정 대상 파일을 찾는 중..." -ForegroundColor White
 
 $targetPath = $jsonEdit.target.Replace("\\", "\")
 
-Write-Host "`n대상 경로: " -nonewline -ForegroundColor Yellow
+Write-Host "`n대상 경로: " -nonewline -ForegroundColor White
 Write-Host "$fullGameDir\$targetPath" -foreground Green
 
 Write-Host "`n수정 내용 반영 중..." -ForegroundColor Yellow
 $jsonTarget = Get-Content "$fullGameDir\$targetPath" -raw | ConvertFrom-Json
-$jsonEdit.update.PSObject.Properties | % { $jsonTarget.strings.($_.name) = $_.value }
+$jsonEdit.update.PSObject.Properties | % { 
+    Write-Host "$(($_.name)) = " -nonewline -foreground Green
+    Write-Host "$($jsonTarget.strings.($_.name))" -nonewline -foreground Yellow
+    Write-Host " -> " -nonewline -foreground White
+    Write-Host "$(($_.value))" -foreground Cyan
+    $jsonTarget.strings.($_.name) = $_.value
+}
 
-Write-Host "`n기존 파일 백업 중..." -ForegroundColor Yellow
+Write-Host "`n기존 파일 백업 중..." -ForegroundColor White
 Rename-Item -Path "$fullGameDir\$targetPath" -NewName "$fullGameDir\$targetPath".Replace('.json', "$(Get-Date -Format "yyyyMMddHHmmssff")_.bak")
 
-Write-Host "`n수정 사항 저장 중..." -ForegroundColor Yellow
+Write-Host "`n수정 사항 저장 중..." -ForegroundColor White
 $jsonTarget | ConvertTo-Json -depth 2 | set-content "$fullGameDir\$targetPath"
 
 Write-Host "`n수정 사항 반영 완료, 아무 키나 누르면 종료합니다..." -ForegroundColor Cyan
 $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown');
+Invoke-Item $([System.IO.Path]::GetDirectoryName("$fullGameDir\$targetPath"))
