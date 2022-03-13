@@ -133,7 +133,7 @@ $jsonEdit.update.PSObject.Properties | % {
 }
 
 Write-Host "`n기존 파일 백업 중..." -ForegroundColor White
-Rename-Item -Path "$fullGameDir\$targetPath" -NewName "$fullGameDir\$targetPath".Replace('.json', "_$(Get-Date -Format "yyyyMMddHHmmssff").bak")
+Rename-Item -Path "$fullGameDir\$targetPath" -NewName "$fullGameDir\$targetPath".Replace('.json', "_$(Get-Date -Format "yyyyMMddHHmmssff").json.bak")
 
 Write-Host "`n수정 사항 저장 중..." -ForegroundColor White
 $jsonTarget | ConvertTo-Json -depth 2 | set-content "$fullGameDir\$targetPath"
