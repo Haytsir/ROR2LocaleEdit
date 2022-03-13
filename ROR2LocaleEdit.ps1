@@ -1,4 +1,4 @@
-$AppId = 632360
+﻿$AppId = 632360
 
 Function Get-SteamPath {
     return (Get-Item 'HKCU:\Software\Valve\Steam\').GetValue("SteamPath").Replace("/", "\")
@@ -97,8 +97,7 @@ function FindGameLibraryFolder {
 
         if (-Not $null -eq $LibraryFolders.LibraryFolders."$i".apps."$GameAppId") {
             return $path
-        }
-        #$LibraryFolders.LibraryFolders."$i".apps | % { if ($_.name -eq $GameDepotId) { Write-Output "Found" } }       
+        }    
     }
 }
 
@@ -111,7 +110,9 @@ Write-Host $fullGameDir -foreground Green
 
 Write-Host "`n수정 내용을 불러오는 중..." -ForegroundColor White
 
-$jsonEdit = ((New-Object System.Net.WebClient)).DownloadString("https://raw.githubusercontent.com/Hatser/ROR2LocaleEdit/main/edits/edit-korean.json") | ConvertFrom-Json
+$webClient = New-Object System.Net.WebClient
+$webClient.Encoding = [System.Text.Encoding]::UTF8
+$jsonEdit = $webClient.DownloadString("https://raw.githubusercontent.com/Hatser/ROR2LocaleEdit/main/edits/edit-korean.json") | ConvertFrom-Json
 
 Write-Host "`n수정 대상 파일을 찾는 중..." -ForegroundColor White
 
