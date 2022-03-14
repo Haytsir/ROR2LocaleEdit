@@ -1,7 +1,38 @@
 ﻿$AppId = 632360
 
+Function Get-Folder($initialDirectory) {
+    [void] [System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms')
+    $FolderBrowserDialog = New-Object System.Windows.Forms.FolderBrowserDialog
+    $FolderBrowserDialog.RootFolder = 'MyComputer'
+    if ($initialDirectory) { $FolderBrowserDialog.SelectedPath = $initialDirectory }
+    [void] $FolderBrowserDialog.ShowDialog()
+    return $FolderBrowserDialog.SelectedPath
+}
+
 Function Get-SteamPath {
-    return (Get-Item 'HKCU:\Software\Valve\Steam\').GetValue("SteamPath").Replace("/", "\")
+    try {
+        return (Get-Item 'HKCU:\Software\Valve\Steama\' -ErrorAction SilentlyContinue).GetValue("SteamPath").Replace("/", "\")
+    }
+    catch {
+        Write-Host "Steam 경로를 찾을 수 없었습니다.`n직접 선택하시겠습니까?" -ForegroundColor White
+        Write-Host "기본 값: " -NoNewline -ForegroundColor White
+        Write-Host "ENTER" -ForegroundColor Yellow
+        Write-Host "[ENTER] 예 " -NoNewline -ForegroundColor Yellow
+        Write-Host "[N] 스크립트 종료" -ForegroundColor White
+        $Key = $Host.UI.RawUI.ReadKey()
+        Switch ($Key.Character) {
+            Default {
+                $folder = Get-Folder
+                if ($folder -eq "") {
+                    exit
+                }
+                return $folder
+            }
+            N {
+                exit
+            }
+        }
+    }
 }
 
 Function ConvertFrom-VDF {
@@ -86,7 +117,13 @@ function FindGameLibraryFolder {
         $GameAppId
     )
 
-    $LibraryFolders = Get-Content "$(Get-SteamPath)\steamapps\libraryfolders.vdf" -Encoding utf8 | ConvertFrom-VDF
+    try { 
+        $LibraryFolders = Get-Content "$(Get-SteamPath)\steamapps\libraryfolders.vdf" -ErrorAction Stop -Encoding utf8 | ConvertFrom-VDF
+    }
+    catch {
+        Write-Host "라이브러리 정보 파일을 찾지 못했습니다. 스크립트를 종료합니다." -NoNewline -ForegroundColor White
+        exit
+    }
 
     for ($i = 1; $true; $i++) {        
         if ($null -eq $LibraryFolders.LibraryFolders."$i") {
@@ -105,8 +142,8 @@ $libFolder = $(FindGameLibraryFolder -GameAppId $AppId)
 
 $installDir = $(Get-Content "$libFolder\steamapps\appmanifest_$AppId.acf" | ConvertFrom-VDF).AppState.Installdir
 $fullGameDir = "$libFolder\steamapps\common\$installDir"
-Write-Host "게임 설치 경로: " -nonewline -ForegroundColor White
-Write-Host $fullGameDir -foreground Green
+Write-Host "게임 설치 경로: " -NoNewline -ForegroundColor White
+Write-Host $fullGameDir -ForegroundColor Green
 
 Write-Host "`n수정 내용을 불러오는 중..." -ForegroundColor White
 
@@ -118,17 +155,23 @@ Write-Host "`n수정 대상 파일을 찾는 중..." -ForegroundColor White
 
 $targetPath = $jsonEdit.target.Replace("\\", "\")
 
-Write-Host "`n대상 경로: " -nonewline -ForegroundColor White
-Write-Host "$fullGameDir\$targetPath" -foreground Green
+Write-Host "`n대상 경로: " -NoNewline -ForegroundColor White
+Write-Host "$fullGameDir\$targetPath" -ForegroundColor Green
 
 Write-Host "`n수정 내용 반영 중..." -ForegroundColor White
-$jsonTarget = Get-Content "$fullGameDir\$targetPath" -raw | ConvertFrom-Json
+try { 
+    $jsonTarget = Get-Content "$fullGameDir\$targetPath" -raw | ConvertFrom-Json
+}
+catch {
+    Write-Host "수정 대상 파일을 찾지 못했습니다. 스크립트를 종료합니다." -NoNewline -ForegroundColor White
+    exit
+}
 $jsonEdit.update.PSObject.Properties | % { 
-    Write-Host "$(($_.name))" -nonewline -foreground Green
-    Write-Host " = " -nonewline -foreground White
-    Write-Host "$($jsonTarget.strings.($_.name))" -nonewline -foreground Yellow
-    Write-Host " -> " -nonewline -foreground White
-    Write-Host "$(($_.value))" -foreground Cyan
+    Write-Host "$(($_.name))" -NoNewline -ForegroundColor Green
+    Write-Host " = " -NoNewline -ForegroundColor White
+    Write-Host "$($jsonTarget.strings.($_.name))" -NoNewline -ForegroundColor Yellow
+    Write-Host " -> " -NoNewline -ForegroundColor White
+    Write-Host "$(($_.value))" -ForegroundColor Cyan
     $jsonTarget.strings.($_.name) = $_.value
 }
 
